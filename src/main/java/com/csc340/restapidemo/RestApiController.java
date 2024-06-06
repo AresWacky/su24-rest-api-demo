@@ -14,7 +14,34 @@ import java.util.logging.Logger;
 @RestController
 public class RestApiController {
 
-    Map<Integer, Student> studentDatabase = new HashMap<>();
+
+    /**
+     * get a random joke via Joke API
+     * endpoint.
+     */
+    @GetMapping("/joke_api")
+    public Object getJoke(@PathVariable int id) {
+        try {
+
+            String url = "https://official-joke-api.appspot.com/random_joke";
+            RestTemplate restTemplate = new RestTemplate();
+            ObjectMapper mapper = new ObjectMapper();
+
+            String jSonQuote = restTemplate.getForObject(url, String.class);
+            JsonNode root = mapper.readTree(jSonQuote);
+
+            String quoteSetup = root.get("setup").asText();
+            String quotePunchline = root.get("punchline").asText();
+            System.out.println("Setup: " + quoteSetup + "\nPunchline: " + quotePunchline);
+
+            return root;
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(RestApiController.class.getName()).log(Level.SEVERE,
+                    null, ex);
+            return "error in /joke_api";
+        }
+
+    }
 
     /**
      * Hello World API endpoint.
@@ -35,56 +62,6 @@ public class RestApiController {
     @GetMapping("/greeting")
     public String greeting(@RequestParam(value = "name", defaultValue = "Dora") String name) {
         return "Hola, soy " + name;
-    }
-
-
-    /**
-     * List all students.
-     *
-     * @return the list of students.
-     */
-    @GetMapping("students/all")
-    public Object getAllStudents() {
-        if (studentDatabase.isEmpty()) {
-            studentDatabase.put(1, new Student(1, "sample1", "csc", 3.86));
-        }
-        return studentDatabase.values();
-    }
-
-    /**
-     * Get one student by Id
-     *
-     * @param id the unique student id.
-     * @return the student.
-     */
-    @GetMapping("students/{id}")
-    public Student getStudentById(@PathVariable int id) {
-        return studentDatabase.get(id);
-    }
-
-
-    /**
-     * Create a new Student entry.
-     *
-     * @param student the new Student
-     * @return the List of Students.
-     */
-    @PostMapping("students/create")
-    public Object createStudent(@RequestBody Student student) {
-        studentDatabase.put(student.getId(), student);
-        return studentDatabase.values();
-    }
-
-    /**
-     * Delete a Student by id
-     *
-     * @param id the id of student to be deleted.
-     * @return the List of Students.
-     */
-    @DeleteMapping("students/delete/{id}")
-    public Object deleteStudent(@PathVariable int id) {
-        studentDatabase.remove(id);
-        return studentDatabase.values();
     }
 
     /**
